@@ -1,0 +1,46 @@
+service: curashare-service
+
+plugins:
+  - serverless-python-requirements
+provider:
+  name: aws
+  stage: prod
+  runtime: python3.8
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:ListTables
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: 'arn:aws:dynamodb:*:*:table/curashare*'
+
+package:
+  individually: true
+  patterns:
+    - '!./**'
+
+functions:
+  curashare_api:
+    name: curashare_api
+    handler: curashareCloudApp.curashare.Lambda_handler
+    memorySize: 128
+    timeout: 30
+    package:
+      patterns:
+        - 'curashareCloudApp/**'
+    events:
+      - http:
+          path: /{profile_id}
+          method: post
+      - http:
+          path: /{profile_id}
+          method: get
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    useDownloadCache: false
+    noDeploy: []
